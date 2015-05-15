@@ -1,4 +1,4 @@
-# gulp-uglify [![Build Status](http://img.shields.io/travis/terinjokes/gulp-uglify.svg?style=flat)](https://travis-ci.org/terinjokes/gulp-uglify) [![](http://img.shields.io/npm/dm/gulp-uglify.svg?style=flat)](https://www.npmjs.org/package/gulp-uglify) [![](http://img.shields.io/npm/v/gulp-uglify.svg?style=flat)](https://www.npmjs.org/package/gulp-uglify) [![](http://img.shields.io/codeclimate/github/terinjokes/gulp-uglify.svg?style=flat)](https://codeclimate.com/github/terinjokes/gulp-uglify) [![](http://img.shields.io/codeclimate/coverage/github/terinjokes/gulp-uglify.svg?style=flat)](https://codeclimate.com/github/terinjokes/gulp-uglify)
+# gulp-uglify [![Build Status](https://img.shields.io/travis/terinjokes/gulp-uglify/master.svg?style=flat)](https://travis-ci.org/terinjokes/gulp-uglify) [![](https://img.shields.io/npm/dm/gulp-uglify.svg?style=flat)](https://www.npmjs.org/package/gulp-uglify) [![](https://img.shields.io/npm/v/gulp-uglify.svg?style=flat)](https://www.npmjs.org/package/gulp-uglify) [![](https://img.shields.io/codeclimate/github/terinjokes/gulp-uglify.svg?style=flat)](https://codeclimate.com/github/terinjokes/gulp-uglify) [![](https://img.shields.io/codeclimate/coverage/github/terinjokes/gulp-uglify.svg?style=flat)](https://codeclimate.com/github/terinjokes/gulp-uglify)
 
 > Minify JavaScript with UglifyJS2.
 
@@ -73,3 +73,4 @@ Wherever popssible, the PluginError object will contain the following properties
 
 To handle errors across your entire pipeline, see the
 [gulp](https://github.com/gulpjs/gulp/blob/master/docs/recipes/combining-streams-to-handle-errors.md#combining-streams-to-handle-errors) documentation.
+
