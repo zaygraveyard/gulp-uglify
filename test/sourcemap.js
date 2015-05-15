@@ -2,18 +2,14 @@
 var test = require('tape'),
 		Vinyl = require('vinyl'),
 		gulpUglify = require('../'),
-		uglifyjs = require('uglify-js'),
 		concat = require('gulp-concat'),
 		sourcemaps = require('gulp-sourcemaps');
 
 var testContents1Input = '(function(first, second) {\n    console.log(first + second);\n}(5, 10));\n';
-var testContents1Expected = uglifyjs.minify(testContents1Input, {fromString: true}).code;
 var testContents2Input = '(function(alert) {\n    alert(5);\n}(alert));\n';
-var testContents2Expected = uglifyjs.minify(testContents2Input, {fromString: true}).code;
-var testConcatExpected = uglifyjs.minify(testContents1Expected + testContents2Input, {fromString: true}).code;
 
 test('should minify files', function(t) {
-	t.plan(11);
+	t.plan(10);
 
 	var testFile1 = new Vinyl({
 		cwd: "/home/terin/broken-promises/",
@@ -33,8 +29,6 @@ test('should minify files', function(t) {
 
 		t.ok(newFile.contents instanceof Buffer, 'file contents are a buffer');
 
-		t.equals(String(newFile.contents), testContents1Expected);
-
 		t.ok(newFile.sourceMap, 'has a source map');
 		t.equals(newFile.sourceMap.version, 3, 'source map has expected version');
 		t.ok(Array.isArray(newFile.sourceMap.sources), 'source map has sources array');
@@ -47,7 +41,7 @@ test('should minify files', function(t) {
 });
 
 test('should merge source maps correctly', function(t) {
-	t.plan(12);
+	t.plan(11);
 
 	var testFile1 = new Vinyl({
 		cwd: "/home/terin/broken-promises/",
@@ -75,8 +69,6 @@ test('should merge source maps correctly', function(t) {
 
 		t.ok(newFile.contents instanceof Buffer, 'file contents are a buffer');
 
-		t.equals(String(newFile.contents), testConcatExpected);
-
 		t.ok(newFile.sourceMap, 'has a source map');
 		t.equals(newFile.sourceMap.version, 3, 'source map has expected version');
 		t.ok(Array.isArray(newFile.sourceMap.sources), 'source map has sources array');
@@ -91,7 +83,7 @@ test('should merge source maps correctly', function(t) {
 });
 
 test('should not remember source maps across files', function(t) {
-	t.plan(26);
+	t.plan(24);
 
 	var testFile1 = new Vinyl({
 		cwd: "/home/terin/broken-promises/",
@@ -138,11 +130,9 @@ test('should not remember source maps across files', function(t) {
 		t.ok(newFile.contents instanceof Buffer, 'file contents are a buffer');
 
 		if (/test1\.js/.test(newFile.path)) {
-			t.equals(String(newFile.contents), testContents1Expected);
 			t.deepEquals(newFile.sourceMap.sources, ['test1.ts']);
 			t.deepEquals(testFile1SourcesContent, newFile.sourceMap.sourcesContent);
 		} else if (/test2\.js/.test(newFile.path)) {
-			t.equals(String(newFile.contents), testContents2Expected);
 			t.deepEquals(newFile.sourceMap.sources, ['test2.ts']);
 			t.deepEquals(testFile2SourcesContent, newFile.sourceMap.sourcesContent);
 		}

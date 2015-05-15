@@ -5,7 +5,6 @@ var test = require('tape'),
 		uglifyjs = require('uglify-js');
 
 var testContentsInput = '"use strict"; (function(console, first, second) {\n\tconsole.log(first + second)\n}(5, 10))';
-var testContentsExpected = uglifyjs.minify(testContentsInput, {fromString: true, compress: false}).code;
 
 var testFile1 = new Vinyl({
 	cwd: "/home/terin/broken-promises/",
@@ -15,7 +14,7 @@ var testFile1 = new Vinyl({
 });
 
 test('should not compress files when `compress: false`', function(t) {
-	t.plan(7);
+	t.plan(6);
 
 	var stream = gulpUglify({
     compress: false
@@ -29,8 +28,6 @@ test('should not compress files when `compress: false`', function(t) {
 
 		t.ok(newFile instanceof Vinyl, 'file is Vinyl');
 		t.ok(newFile.contents instanceof Buffer, 'file contents are a buffer');
-
-		t.equals(String(newFile.contents), testContentsExpected);
 	});
 
 	stream.write(testFile1);

@@ -1,9 +1,7 @@
 'use strict';
 var through = require('through2');
-var deap = require('deap');
+var defined = require('defined');
 var PluginError = require('gulp-util/lib/PluginError');
-var applySourceMap = require('vinyl-sourcemaps-apply');
-var reSourceMapComment = /\n\/\/# sourceMappingURL=.+?$/;
 var pluginName = 'gulp-uglify';
 
 function trycatch(fn, handle) {
@@ -15,18 +13,19 @@ function trycatch(fn, handle) {
 }
 
 function setup(opts) {
-  var options = deap({}, opts, {
-    fromString: true,
-    output: {}
-  });
+  var options = {
+    output: defined(opts.output, {}),
+    compress: defined(opts.compress, {}),
+    mangle: defined(opts.mangle, {})
+  };
 
-  if (options.preserveComments === 'all') {
+  if (opts.preserveComments === 'all') {
     options.output.comments = true;
-  } else if (options.preserveComments === 'some') {
+  } else if (opts.preserveComments === 'some') {
     // preserve comments with directives or that start with a bang (!)
     options.output.comments = /^!|@preserve|@license|@cc_on/i;
-  } else if (typeof options.preserveComments === 'function') {
-    options.output.comments = options.preserveComments;
+  } else if (typeof opts.preserveComments === 'function') {
+    options.output.comments = opts.preserveComments;
   }
 
   return options;
@@ -62,14 +61,47 @@ module.exports = function(opts, uglify) {
       return callback(createError(file, 'Streaming not supported'));
     }
 
-    if (file.sourceMap) {
-      options.outSourceMap = file.relative;
-    }
-
     var mangled = trycatch(function() {
-      var m = uglify.minify(String(file.contents), options);
-      m.code = new Buffer(m.code.replace(reSourceMapComment, ''));
-      return m;
+      // 1. parse
+      var toplevel = uglify.parse(file.contents + '', {
+        filename: file.relative,
+        toplevel: null
+      });
+
+      // 2. compress
+      if (options.compress) {
+        toplevel.figure_out_scope();
+        var sq = uglify.Compressor(options.compress);
+        toplevel = toplevel.transform(sq);
+      }
+
+      // 3. mangle
+      if (options.mangle) {
+        toplevel.figure_out_scope(options.mangle);
+        toplevel.compute_char_frequency(options.mangle);
+        toplevel.mangle_names(options.mangle);
+      }
+
+      // 4. output
+      if (file.sourceMap) {
+        options.output.source_map = uglify.SourceMap({
+          file: file.relative,
+          orig: file.sourceMap.mappings.length > 0 ? file.sourceMap : null
+        });
+
+        if (file.sourceMap.sources) {
+          file.sourceMap.sources.forEach(function(source, index) {
+            options.output.source_map.get().setSourceContent(source, file.sourceMap.sourcesContent[index]);
+          });
+        }
+      }
+      var stream = uglify.OutputStream(options.output);
+      toplevel.print(stream);
+
+      return {
+        code: new Buffer(stream + ''),
+        map: options.output.source_map + ''
+      };
     }, createError.bind(null, file));
 
     if (mangled instanceof PluginError) {
@@ -79,9 +111,7 @@ module.exports = function(opts, uglify) {
     file.contents = mangled.code;
 
     if (file.sourceMap) {
-      var sourceMap = JSON.parse(mangled.map);
-      sourceMap.sources = [file.relative];
-      applySourceMap(file, sourceMap);
+      file.sourceMap = JSON.parse(mangled.map);
     }
 
     callback(null, file);

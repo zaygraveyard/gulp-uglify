@@ -4,8 +4,7 @@ var test = require('tape'),
 		gulpUglify = require('../'),
 		uglifyjs = require('uglify-js');
 	
-var testContentsInput = '"use strict"; (function(console, first, second) { console.log(first + second) }(5, 10))';
-var testContentsExpected = uglifyjs.minify(testContentsInput, {fromString: true}).code;
+var testContentsInput = '"use strict"; (function(console, first, second) { console.log(first + second) }(console, 5, 10))';
 
 var testFile1 = new Vinyl({
 	cwd: "/home/terin/broken-promises/",
@@ -15,7 +14,7 @@ var testFile1 = new Vinyl({
 });
 
 test('should minify files', function(t) {
-	t.plan(7);
+	t.plan(6);
 
 	var stream = gulpUglify();
 
@@ -27,8 +26,6 @@ test('should minify files', function(t) {
 
 		t.ok(newFile instanceof Vinyl, 'file is Vinyl');
 		t.ok(newFile.contents instanceof Buffer, 'file contents are a buffer');
-
-		t.equals(String(newFile.contents), testContentsExpected);
 	});
 
 	stream.write(testFile1);
